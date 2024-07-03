@@ -50,7 +50,26 @@ class Searcher:
             self.log.register_info("Search was done!")
         except Exception as error:
             self.log.register_exception("Exception ocurred when selecting period of time: %s" % error)
-                
+
+
+    def select_topics(self, topic: str):
+        try:
+            script = ("""
+                        var table = document.getElementsByClassName('search-filter-menu')[0]
+                        var lines = table.getElementsByTagName('li')
+                        for (var i = 0;i<lines.length;i++){
+                            var topic = lines[i].getElementsByTagName('span')[0].innerText
+                            if (topic == '%s'){
+                                lines[i].getElementsByClassName('checkbox-input-element')[0].click();
+                                break;
+                            }
+                        }
+                    """ % topic)
+            self.driver.execute_script(script)
+            self.log.register_info("Option selected")
+        except Exception as error:
+            self.log.register_exception("Could not select topic due to error: %s" % error)
+                   
 
 
 
