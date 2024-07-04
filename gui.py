@@ -1,3 +1,5 @@
+import requests
+
 from selenium import webdriver
 from logger import Logger
 from time import sleep
@@ -74,11 +76,10 @@ class Searcher:
                 self.log.register_exception("Invalid topic. Please, select an available topic on the website!")
 
 
-    def get_news_info(self):
+    def get_news_info(self, news_storage: list):
         try:
             news_table = self.driver.find_element(By.CLASS_NAME, "search-results-module-results-menu")
             news_item =  news_table.find_elements(By.TAG_NAME, 'li')
-            self.news_content = []
             counter = 0
 
             for element in news_item:
@@ -94,24 +95,23 @@ class Searcher:
                     news_date = element.find_element(By.CLASS_NAME,"promo-timestamp")
                     content_dict["Date"] = self.driver.execute_script("return arguments[0].textContent", news_date)
 
-                    self.news_content.append(content_dict)
+                    news_storage.append(content_dict)
                 except Exception as error:
                     self.log.register_exception("Could not get news content, item list %s had an error" % str(counter))
                     
 
-            print(self.news_content)
-            return self.news_content
+            return news_storage
         
         except Exception as error:
             self.log.register_exception("Could not get news content")
 
 
+    def go_next_page(self):
+        try:
+            next_page_element = self.driver.find_element(By.CLASS_NAME, "search-results-module-next-page")
+            next_page_element.click()
+            sleep(4)
+        except Exception as error:
+            self.log.register_exception("Could not get news content")
 
-                   
 
-
-
-
-#driver = Shadow(driver)
-# driver.execute_script("document.getElementsByClassName('text__text__1FZLe text__graphite__1DktY text__medium__1kbOh text__extra_small__1Mw6v body__base__22dCE body__extra_small_body__3QTYe link')[0].click()")
-# print('teste')
