@@ -39,8 +39,8 @@ class Searcher:
 
     def select_period(self, period: str):
         try:
-            sort_by_element = self.driver.find_element(By.XPATH,
-                "/html/body/div[2]/ps-search-results-module/form/div[2]/ps-search-filters/div/main/div[1]/div[2]/div/label/select")
+            sleep(3)
+            sort_by_element = self.driver.find_element(By.CLASS_NAME,"select-input")
             sort_by_element.click()
             select = Select(sort_by_element)
             if period == 'Newest':
@@ -48,11 +48,12 @@ class Searcher:
             else:
                 select.select_by_value('2')
             self.log.register_info("Search was done!")
+            sleep(2)
         except Exception as error:
             self.log.register_exception("Exception ocurred when selecting period of time: %s" % error)
 
 
-    def select_topics(self, topic: str):
+    def select_topic(self, topic: str):
         try:
             script = ("""
                         var table = document.getElementsByClassName('search-filter-menu')[0]
@@ -66,9 +67,46 @@ class Searcher:
                         }
                     """ % topic)
             self.driver.execute_script(script)
+            sleep(3)
             self.log.register_info("Option selected")
         except Exception as error:
-            self.log.register_exception("Could not select topic due to error: %s" % error)
+            if "Cannot read properties of undefined" in str(error):
+                self.log.register_exception("Invalid topic. Please, select an available topic on the website!")
+
+
+    def get_news_info(self):
+        try:
+            news_table = self.driver.find_element(By.CLASS_NAME, "search-results-module-results-menu")
+            news_item =  news_table.find_elements(By.TAG_NAME, 'li')
+            self.news_content = []
+            counter = 0
+
+            for element in news_item:
+                try:
+                    counter += 1
+                    content_dict = {}
+                    news_title = element.find_element(By.TAG_NAME, 'h3')
+                    content_dict["Title"] = self.driver.execute_script("return arguments[0].textContent", news_title)
+
+                    news_desc = element.find_element(By.CLASS_NAME, "promo-description")
+                    content_dict["Description"] = self.driver.execute_script("return arguments[0].textContent", news_desc)
+
+                    news_date = element.find_element(By.CLASS_NAME,"promo-timestamp")
+                    content_dict["Date"] = self.driver.execute_script("return arguments[0].textContent", news_date)
+
+                    self.news_content.append(content_dict)
+                except Exception as error:
+                    self.log.register_exception("Could not get news content, item list %s had an error" % str(counter))
+                    
+
+            print(self.news_content)
+            return self.news_content
+        
+        except Exception as error:
+            self.log.register_exception("Could not get news content")
+
+
+
                    
 
 
