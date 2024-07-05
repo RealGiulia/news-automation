@@ -88,22 +88,31 @@ class Searcher:
                     content_dict = {}
                     news_title = element.find_element(By.TAG_NAME, 'h3')
                     content_dict["Title"] = self.driver.execute_script("return arguments[0].textContent", news_title)
+                except NoSuchElementException:
+                    self.log.register_exception("Item has no title.")
+                    content_dict["Title"] = "empty"
 
+                try:
                     news_desc = element.find_element(By.CLASS_NAME, "promo-description")
                     content_dict["Description"] = self.driver.execute_script("return arguments[0].textContent", news_desc)
+                except NoSuchElementException:
+                    self.log.register_exception("Item dont have description")
+                    content_dict["Description"] = "empty"
 
+                try:
                     news_date = element.find_element(By.CLASS_NAME,"promo-timestamp")
                     content_dict["Date"] = self.driver.execute_script("return arguments[0].textContent", news_date)
+                except NoSuchElementException:
+                    self.log.register_exception("Item has no date.")
+                    content_dict["Date"] = "N/A"
 
-                    news_storage.append(content_dict)
-                except Exception as error:
-                    self.log.register_exception("Could not get news content, item list %s had an error" % str(counter))
-                    
+                news_storage.append(content_dict)
 
-            return news_storage
-        
         except Exception as error:
             self.log.register_exception("Could not get news content")
+
+        finally:
+            return news_storage
 
 
     def go_next_page(self):
