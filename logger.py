@@ -4,9 +4,11 @@ from datetime import date
 
 class Logger:
 
-    def __init__(self) -> None:
+    def __init__(self, log_folder: str) -> None:
         self.name = date.today().strftime("%m-%d-%y") + '-NewsSearcherLog.log' 
-        self.filename = os.path.join(os.getcwd(), self.name)
+        self.filename = os.path.join(log_folder, self.name)
+        if not os.path.exists(log_folder):
+            os.mkdir(log_folder)
         logging.basicConfig(filename=self.filename,level=logging.NOTSET, format='%(asctime)s - %(levelname)s - %(message)s')
 
 

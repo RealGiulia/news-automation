@@ -7,15 +7,17 @@ from logger import Logger
 
 class Excel:
 
-    def __init__(self):
+    def __init__(self, folder: str):
         self.dir = date.today().strftime("%m-%d-%y") + '-News.xlsx' 
-        self.filename = os.path.join(os.getcwd(), self.dir)
+        self.filename = os.path.join(folder, self.dir)
+        if not os.path.exists(folder):
+            os.mkdir(folder)
         self.log =  Logger()
         
 
     def insert_data(self, data: list):
         try:
-            df = pd.DataFrame(data,set_index=False)
+            df = pd.DataFrame(data)
             df.to_excel(self.filename)
         except Exception as error:
             self.log.register_exception("Could not insert data on excel file. Error %s")

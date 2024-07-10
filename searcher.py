@@ -12,9 +12,10 @@ from selenium.common.exceptions import WebDriverException
 
 class Searcher:
 
-    def __init__(self) -> None:
+    def __init__(self, img_path:str, log_path: str) -> None:
         self.driver = Chrome()
-        self.log = Logger()
+        self.log = Logger(log_path)
+        self.img_path = img_path
 
 
     def open_website(self):
@@ -78,6 +79,7 @@ class Searcher:
 
     def get_news_info(self, news_storage: list):
         try:
+            self.driver.implicitly_wait(5)
             news_table = self.driver.find_element(By.CLASS_NAME, "search-results-module-results-menu")
             news_item =  news_table.find_elements(By.TAG_NAME, 'li')
             counter = 0
@@ -92,6 +94,16 @@ class Searcher:
                     self.log.register_exception("Item has no title.")
                     content_dict["Title"] = "empty"
 
+                try:
+                    image = element.find_element(By.TAG_NAME,'img')
+                    content_dict["IMG_URL"] = image.get_attribute("src")
+                    content_dict["IMG_NAME"] = "img-" + str(counter) + ".jpg"
+
+                except NoSuchElementException:
+                    self.log.register_exception("Could not get News URL")
+                    content_dict["IMG_URL"] = "empty"
+                    content_dict["IMG_NAME"] = "empty"
+                    
                 try:
                     news_desc = element.find_element(By.CLASS_NAME, "promo-description")
                     content_dict["Description"] = self.driver.execute_script("return arguments[0].textContent", news_desc)
@@ -112,6 +124,7 @@ class Searcher:
             self.log.register_exception("Could not get news content")
 
         finally:
+            self.get_image_info(news_storage)
             return news_storage
 
 
@@ -121,6 +134,55 @@ class Searcher:
             next_page_element.click()
             sleep(4)
         except Exception as error:
-            self.log.register_exception("Could not get news content")
+            self.log.register_exception("Could not get news content. Error: %s" %error)
+
+
+    def get_image_info(self, news: list):
+
+        try:
+            from datetime import date
+            import os
+            img_folder = self.img_path + date.today().strftime("%m-%d-%y")
+            if not os.path.exists(img_folder):
+                os.mkdir(img_folder)
+
+            for item in news:
+                if item["IMG_URL"] != "empty":
+                    sleep(2)
+                    img = requests.get(item["IMG_URL"])
+                    if img.status_code == 200:
+                        with open(item["IMG_NAME"], 'wb') as f:
+                            f.write(img.content)
+                    sleep(3)
+        except Exception as error:
+            self.log.register_exception("Could not get image information. Error: %s" %error)
+
+
+    def complete_news_info(self, news: list, search_word):
+        try:
+            updated_news_info = []
+            for i in news:
+                if "$"  or "$" or " USD "  in i["Description"]:
+                    i["Currency symbols"] = "True"
+                else:
+                    i["Currency symbols"] = "False"
+            
+                qtd_search_phrase = i["Description"].count(search_word)
+                i["Search Phrase on description"]  = qtd_search_phrase
+
+                updated_news_info.append(i)
+
+            self.log.register_info("News info completed!")
+        except Exception as error:
+            self.log.register_exception("Could not complete news information. Error: %s" %error)
+        
+        finally:
+            return updated_news_info
+            
+
+
+
+                
+
 
 
