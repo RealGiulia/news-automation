@@ -1,5 +1,5 @@
 import requests
-
+from datetime import date
 from selenium import webdriver
 from logger import Logger
 from time import sleep
@@ -12,11 +12,10 @@ from selenium.common.exceptions import WebDriverException
 
 class Searcher:
 
-    def __init__(self, img_path:str, log_path: str) -> None:
+    def __init__(self, img_path:str, log: object) -> None:
         self.driver = Chrome()
-        self.log = Logger(log_path)
-        self.img_path = img_path
-
+        self.log = log
+        self.img_folder = img_path + date.today().strftime("%m-%d-%y")
 
     def open_website(self):
         try:
@@ -97,7 +96,7 @@ class Searcher:
                 try:
                     image = element.find_element(By.TAG_NAME,'img')
                     content_dict["IMG_URL"] = image.get_attribute("src")
-                    content_dict["IMG_NAME"] = "img-" + str(counter) + ".jpg"
+                    content_dict["IMG_NAME"] = self.img_folder + "/img-" + str(counter) + ".jpg"
 
                 except NoSuchElementException:
                     self.log.register_exception("Could not get News URL")
@@ -142,9 +141,8 @@ class Searcher:
         try:
             from datetime import date
             import os
-            img_folder = self.img_path + date.today().strftime("%m-%d-%y")
-            if not os.path.exists(img_folder):
-                os.mkdir(img_folder)
+            if not os.path.exists(self.img_folder):
+                os.mkdir(self.img_folder)
 
             for item in news:
                 if item["IMG_URL"] != "empty":

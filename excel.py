@@ -7,12 +7,12 @@ from logger import Logger
 
 class Excel:
 
-    def __init__(self, folder: str):
+    def __init__(self, folder: str, log: object):
         self.dir = date.today().strftime("%m-%d-%y") + '-News.xlsx' 
         self.filename = os.path.join(folder, self.dir)
         if not os.path.exists(folder):
             os.mkdir(folder)
-        self.log =  Logger()
+        self.log = log
         
 
     def insert_data(self, data: list):

@@ -8,7 +8,7 @@ class Logger:
         self.name = date.today().strftime("%m-%d-%y") + '-NewsSearcherLog.log' 
         self.filename = os.path.join(log_folder, self.name)
         if not os.path.exists(log_folder):
-            os.mkdir(log_folder)
+            os.makedirs(log_folder)
         logging.basicConfig(filename=self.filename,level=logging.NOTSET, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
