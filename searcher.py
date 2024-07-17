@@ -1,14 +1,12 @@
 import requests
 from datetime import date
-from selenium import webdriver
-from logger import Logger
 from time import sleep
 from selenium.webdriver import Chrome
 from selenium.webdriver import Keys
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
-from selenium.common.exceptions import WebDriverException
+
 
 class Searcher:
 
@@ -120,10 +118,9 @@ class Searcher:
                 news_storage.append(content_dict)
 
         except Exception as error:
-            self.log.register_exception("Could not get news content")
+            self.log.register_exception("Could not get news content. Error %s" %error)
 
         finally:
-            self.get_image_info(news_storage)
             return news_storage
 
 
@@ -156,31 +153,4 @@ class Searcher:
             self.log.register_exception("Could not get image information. Error: %s" %error)
 
 
-    def complete_news_info(self, news: list, search_word):
-        try:
-            updated_news_info = []
-            for i in news:
-                if "$"  or "$" or " USD "  in i["Description"]:
-                    i["Currency symbols"] = "True"
-                else:
-                    i["Currency symbols"] = "False"
-            
-                qtd_search_phrase = i["Description"].count(search_word)
-                i["Search Phrase on description"]  = qtd_search_phrase
-
-                updated_news_info.append(i)
-
-            self.log.register_info("News info completed!")
-        except Exception as error:
-            self.log.register_exception("Could not complete news information. Error: %s" %error)
-        
-        finally:
-            return updated_news_info
-            
-
-
-
-                
-
-
-
+ 
